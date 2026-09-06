@@ -1,0 +1,49 @@
+# Dependências — cada apps/* tem seu próprio node_modules (monorepo sem workspaces)
+node_modules/
+.npm/
+*.tgz
+
+# Build — Next.js (apps/web)
+.next/
+out/
+next-env.d.ts
+
+# Build — Fastify/TypeScript (apps/api)
+dist/
+build/
+*.tsbuildinfo
+
+# Vercel
+.vercel/
+
+# Variáveis de ambiente — DATABASE_URL (Neon) e NEXT_PUBLIC_API_BASE_URL moram aqui.
+# Os .env.example são versionados de propósito: são a documentação das envs.
+.env
+.env.*
+!.env.example
+
+# Prisma — client gerado; migrations e schema.prisma SÃO versionados
+**/prisma/generated/
+
+# Logs e caches
+*.log
+npm-debug.log*
+.eslintcache
+.cache/
+
+# Sidecar do canvas de design: estado local de pan/zoom e ordem das artboards,
+# gravado ao abrir o handoff no navegador. É preferência de quem abriu, não design.
+.design-canvas.state.json
+
+# Editores
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Sistema operacional — OneDrive e Explorer sujam a pasta no Windows;
+# .DS_Store aparece se alguém da mentoria estiver no Mac
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.DS_Store

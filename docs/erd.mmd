@@ -1,0 +1,115 @@
+erDiagram
+  %% ─────────── Cardápio (lado da leitura) ───────────
+  Restaurant    ||--o{ OpeningHour    : "1 restaurante define 0..N faixas de horário"
+  Restaurant    ||--o{ MenuSection    : "1 restaurante organiza 0..N seções de cardápio"
+  MenuSection   ||--o{ MenuItem       : "1 seção contém 0..N pratos"
+  MenuItem      ||--o{ ModifierGroup  : "1 prato oferece 0..N grupos de escolha"
+  ModifierGroup ||--|{ ModifierOption : "1 grupo lista 1..N opções"
+
+  %% ─────────── Pedido (lado da escrita) ───────────
+  Restaurant    ||--o{ Order          : "1 restaurante recebe 0..N pedidos"
+  Order         ||--|{ OrderItem      : "1 pedido tem 1..N linhas (nunca vazio)"
+  MenuItem      ||--o{ OrderItem      : "1 prato originou 0..N linhas (FK opcional)"
+  Coupon        ||--o{ Order          : "1 cupom desconta em 0..N pedidos (opcional)"
+
+  Restaurant {
+    string   id              PK "cuid"
+    string   slug            UK "padaria-do-ze — usado na URL do restaurante"
+    string   name               "Padaria do Zé"
+    string   category           "slug da cozinha: padaria, pizza, japa..."
+    string   tags               "Padaria · Café · Brunch (linha do card)"
+    float    rating             "4.8 — exibido como 4,8"
+    int      reviewCount        "1247 avaliações"
+    int      distanceMeters     "1200 — formatado como 1,2 km"
+    int      prepTimeMinutes    "18 — o Pronto em ~18 min"
+    bool     isOpen             "estado agora; a tela 07 depende disso"
+    string   coverUrl           "capa 1600px"
+    string   logoUrl            "avatar 88px da ficha"
+    string   addressLine        "R. Wisard, 348"
+    string   neighborhood       "Vila Madalena — pickup pill e busca"
+    string   city               "São Paulo"
+    string   phone              "(11) 2389-0042 — botão Ligar"
+  }
+
+  OpeningHour {
+    string id           PK
+    string restaurantId FK
+    int    dayOfWeek       "0=domingo .. 6=sábado"
+    int    opensAtMinutes  "420 = 7h"
+    int    closesAtMinutes "780 = 13h"
+  }
+
+  MenuSection {
+    string id           PK
+    string restaurantId FK
+    string name            "Mais pedidos da casa"
+    int    position        "ordem na nav lateral com scrollspy"
+  }
+
+  MenuItem {
+    string id          PK
+    string sectionId   FK
+    string name           "Tapioca de queijo coalho"
+    string description    "texto do card e do modal"
+    int    priceCents     "1890"
+    string imageUrl       "foto 400/1200px"
+    string availability   "AVAILABLE | LOW_STOCK | OUT_OF_STOCK"
+    bool   isPopular      "badge Mais pedido da casa"
+    string promoLabel     "10% off — nulo quando não há promo"
+  }
+
+  ModifierGroup {
+    string id         PK
+    string menuItemId FK
+    string name          "Escolha o acompanhamento"
+    string helperText    "Escolha 1 opção"
+    int    minSelect     "1 = obrigatório, 0 = opcional"
+    int    maxSelect     "1 = radio, maior que 1 = checkbox"
+    int    position      "ordem dentro do modal"
+  }
+
+  ModifierOption {
+    string id      PK
+    string groupId FK
+    string name       "Queijo coalho extra"
+    int    priceDelta "500 = + R$ 5,00; 0 = Grátis"
+    bool   available  "a opção pode esgotar sozinha"
+    int    position
+  }
+
+  Order {
+    string   id            PK "cuid — o #A8B2C9F1 da tela 06"
+    string   code          UK "MA-7K2D — maiúsculo, sem 0/O/1/I"
+    string   restaurantId  FK "sacola é mono-restaurante"
+    string   couponCode    FK "nulo quando não há cupom"
+    string   customerName     "Marina — único dado pessoal coletado"
+    string   status           "PLACED | READY | PICKED_UP | CANCELED"
+    int      subtotalCents    "soma das linhas"
+    int      discountCents    "desconto congelado no momento do pedido"
+    int      totalCents       "subtotal menos desconto; retirada é sempre grátis"
+    string   qrPayload        "URL assinada lida no balcão"
+    datetime estimatedReadyAt "createdAt + prepTimeMinutes"
+    datetime createdAt
+  }
+
+  OrderItem {
+    string id                 PK
+    string orderId            FK
+    string menuItemId         FK "opcional — o prato pode ser deletado depois"
+    string nameSnapshot          "nome no momento do pedido"
+    int    priceCentsSnapshot    "preço unitário base no momento do pedido"
+    int    qty                   "1..20 (stepper do modal)"
+    json   modifiers             "[{ group, option, priceDelta }] — congelado"
+    string note                  "recado pro restaurante, máx 140 char"
+    int    lineTotalCents        "(base + modificadores) vezes qty"
+  }
+
+  Coupon {
+    string   code         PK "MANDA20"
+    string   label           "rótulo exibido na linha de desconto"
+    int      percentOff      "20 — nulo se for desconto fixo"
+    int      amountOffCents  "nulo se for percentual"
+    int      minSubtotal     "pedido mínimo em centavos"
+    datetime expiresAt
+    bool     active
+  }
