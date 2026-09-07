@@ -45,11 +45,38 @@ vocabulário cobre os dois grupos do design.
 - Preço de modificador variando por quantidade do prato.
 - Salvar uma customização como favorita.
 
-## [DECISÃO PENDENTE]
+## Decisões
 
-- **Opção esgotada.** O ERD tem `ModifierOption.available` ("a opção pode
-  esgotar sozinha"), mas nenhuma tela desenha uma opção indisponível dentro do
-  modal. Definir o tratamento visual ou remover o campo do MVP.
-- **Modificadores como tabela ou JSON.** O ERD registra a alternativa mais
-  enxuta (guardar tudo em um campo JSON no prato), ao custo de perder a
-  validação no servidor. Vale decidir antes de escrever o schema.
+- **Opção esgotada:** some da lista de escolhas do modal, sem badge — e o
+  servidor rejeita se o cliente enviar uma opção indisponível mesmo assim —
+  [DP-09](../decisoes-produto.md#dp-09--opção-de-modificador-esgotada).
+- **Modificadores como tabela ou JSON:** continuam como tabelas
+  (`ModifierGroup`/`ModifierOption`) —
+  [DP-10](../decisoes-produto.md#dp-10--modificadores-continuam-como-tabelas).
+- **Observação do item:** campo opcional, até 140 caracteres, placeholder
+  "Algum recado pro restaurante? (opcional)" e contador `0/140` —
+  [DP-25](../decisoes-produto.md#dp-25--observação-do-item-opcional-140-caracteres).
+- **Acessibilidade do modal:** foco preso e Esc fazem parte do requisito
+  funcional desta história, não são extra —
+  [DP-26](../decisoes-produto.md#dp-26--piso-mínimo-de-acessibilidade).
+
+## Critérios de aceite
+
+- Abrir o modal a partir do `+` de um prato mostra foto, nome, descrição,
+  preço base e os grupos de modificadores daquele prato.
+- Um grupo com `minSelect >= 1` bloqueia o CTA "Adicionar à sacola" até que a
+  quantidade mínima de opções esteja escolhida.
+- Escolher ou remover uma opção atualiza o total exibido no CTA
+  imediatamente, somando os `priceDelta` das opções escolhidas × a
+  quantidade.
+- Uma opção com `available: false` não aparece na lista — mesmo que a pessoa
+  tente enviar o pedido com ela via chamada direta à API, o servidor rejeita.
+- Digitar mais de 140 caracteres na observação não é possível — o campo trava
+  e o contador mostra `140/140`.
+- O seletor de quantidade aceita de 1 a 20, com os botões +/- e o input
+  nativo.
+- Fechar o modal por backdrop, Esc ou X devolve o foco pro elemento que abriu
+  o modal; enquanto aberto, o Tab não sai do modal (foco preso).
+- Confirmar "Adicionar à sacola" revalida no servidor as regras dos grupos —
+  a chamada falha com erro claro se alguma regra de mínimo/máximo não for
+  respeitada, mesmo que a UI já tivesse liberado o botão.

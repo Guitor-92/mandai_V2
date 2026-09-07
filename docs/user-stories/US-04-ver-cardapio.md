@@ -39,11 +39,31 @@ customização (US-05).
 - "Ligar" e "Ver mapa" como funcionalidades — só o dado exibido.
 - Grade semanal de horários (aparece na variante fechada, US-09).
 
-## [DECISÃO PENDENTE]
+## Decisões
 
-- **Identificador na URL.** O handoff usa `/restaurante/:slug`; o
-  `ARQUITETURA.md` §3.1 usa `/restaurante/[id]`. O ERD já registra essa
-  pendência para ADR. Escolher um e registrar.
-- **Seções sem prato.** A navegação lateral do design lista seis seções
-  ("Salgados", "Doces", "Bebidas") que não têm itens no mock. Definir se seção
-  vazia aparece ou é escondida.
+- **Identificador na URL:** `/restaurante/[slug]` — resolvido no briefing do
+  lead (`docs/qa/00-briefing-do-lead.md`, seção A) e ratificado por ADR pelo
+  `architect-agent`.
+- **Seções sem prato:** ficam ocultas, tanto na navegação lateral quanto no
+  corpo do cardápio —
+  [DP-08](../decisoes-produto.md#dp-08--seções-de-cardápio-sem-prato-ficam-ocultas).
+- **Troca de restaurante com sacola:** se a pessoa tenta abrir o modal de um
+  item de outro restaurante com a sacola não vazia, aparece o diálogo de
+  confirmação antes do modal de customização —
+  [DP-21](../decisoes-produto.md#dp-21--troca-de-restaurante-com-sacola-entra-no-mvp).
+
+## Critérios de aceite
+
+- Acessar `/restaurante/[slug]` mostra a ficha (logo, nome, selo de abertura,
+  nota, tags, endereço, tempo de preparo) e o cardápio agrupado por seção.
+- Só aparecem, na navegação lateral e no corpo, seções que têm pelo menos um
+  prato.
+- Rolar a página destaca, na navegação lateral, a seção correspondente ao
+  trecho visível (scrollspy).
+- A mini-sacola lateral reflete o estado atual da sacola e atualiza sem
+  recarregar a página ao adicionar um item.
+- Clicar no `+` de um prato de um restaurante diferente do da sacola atual (com
+  a sacola não vazia) mostra o diálogo de DP-21 antes de qualquer modal de
+  customização abrir.
+- Clicar no `+` de um prato abre o modal em `/restaurante/[slug]?item=X`, e o
+  botão voltar do navegador fecha o modal sem sair da página.

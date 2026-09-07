@@ -1,0 +1,168 @@
+// Schema Prisma do Mandaí.
+// Espelha docs/erd.md — regra de manutenção: mexeu aqui, mexe lá no mesmo commit.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MenuItemAvailability {
+  AVAILABLE
+  LOW_STOCK
+  OUT_OF_STOCK
+}
+
+enum OrderStatus {
+  PLACED
+  READY
+  PICKED_UP
+  CANCELED
+}
+
+model Restaurant {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  category        String
+  tags            String
+  rating          Float
+  reviewCount     Int
+  distanceMeters  Int
+  prepTimeMinutes Int
+  isOpen          Boolean  @default(true)
+  coverUrl        String
+  logoUrl         String
+  addressLine     String
+  neighborhood    String
+  city            String
+  phone           String
+
+  openingHours OpeningHour[]
+  sections     MenuSection[]
+  orders       Order[]
+
+  @@map("restaurants")
+}
+
+model OpeningHour {
+  id              String @id @default(cuid())
+  restaurantId    String
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  dayOfWeek       Int
+  opensAtMinutes  Int
+  closesAtMinutes Int
+
+  @@map("opening_hours")
+}
+
+model MenuSection {
+  id           String @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  position     Int
+
+  items MenuItem[]
+
+  @@map("menu_sections")
+}
+
+model MenuItem {
+  id           String               @id @default(cuid())
+  sectionId    String
+  section      MenuSection          @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  name         String
+  description  String
+  priceCents   Int
+  imageUrl     String
+  availability MenuItemAvailability @default(AVAILABLE)
+  isPopular    Boolean              @default(false)
+  promoLabel   String?
+
+  modifierGroups ModifierGroup[]
+  orderItems     OrderItem[]
+
+  @@map("menu_items")
+}
+
+model ModifierGroup {
+  id         String   @id @default(cuid())
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  name       String
+  helperText String
+  minSelect  Int
+  maxSelect  Int
+  position   Int
+
+  options ModifierOption[]
+
+  @@map("modifier_groups")
+}
+
+model ModifierOption {
+  id         String        @id @default(cuid())
+  groupId    String
+  group      ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name       String
+  priceDelta Int
+  available  Boolean       @default(true)
+  position   Int
+
+  @@map("modifier_options")
+}
+
+model Order {
+  id               String      @id @default(cuid())
+  code             String      @unique
+  restaurantId     String
+  restaurant       Restaurant  @relation(fields: [restaurantId], references: [id])
+  couponCode       String?
+  coupon           Coupon?     @relation(fields: [couponCode], references: [code])
+  customerName     String
+  status           OrderStatus @default(PLACED)
+  subtotalCents    Int
+  discountCents    Int
+  totalCents       Int
+  qrPayload        String
+  estimatedReadyAt DateTime
+  createdAt        DateTime    @default(now())
+
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id                 String   @id @default(cuid())
+  orderId            String
+  order              Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId         String?
+  menuItem           MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+  nameSnapshot       String
+  priceCentsSnapshot Int
+  qty                Int
+  modifiers          Json
+  note               String?
+  lineTotalCents     Int
+
+  @@map("order_items")
+}
+
+model Coupon {
+  code           String   @id
+  label          String
+  percentOff     Int?
+  amountOffCents Int?
+  minSubtotal    Int
+  expiresAt      DateTime
+  active         Boolean  @default(true)
+
+  orders Order[]
+
+  @@map("coupons")
+}

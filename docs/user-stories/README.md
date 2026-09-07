@@ -4,9 +4,11 @@ Escopo do MVP derivado do design handoff (`design_handoff_mandai_web/`), do
 modelo de domínio (`docs/erd.md`) e do plano de arquitetura (`ARQUITETURA.md`).
 
 O objetivo aqui é **mapear escopo para a conversa de mentoria**, não abastecer
-um sprint planning. Por isso não há critérios de aceite detalhados nem
-estimativas — cada história diz o que entra, o que não entra e onde a fonte
-ainda está ambígua.
+um sprint planning — por isso não há estimativas. Cada história diz o que
+entra, o que não entra, as decisões de produto que fecharam as ambiguidades
+originais (ver `docs/decisoes-produto.md`) e uma seção **Critérios de
+aceite**, curta e verificável, para backend e frontend saberem quando
+terminaram.
 
 **Uma história por arquivo.** Numeração de dois dígitos, nome em kebab-case:
 `US-NN-titulo-curto.md`.
@@ -23,10 +25,10 @@ ainda está ambígua.
 | [US-04](US-04-ver-cardapio.md) | Ver cardápio | `03 · Cardápio do restaurante` | MVP |
 | [US-05](US-05-customizar-item.md) | Customizar item | `04 · Adicionar item (modal)` | MVP |
 | [US-06](US-06-gerenciar-sacola.md) | Gerenciar sacola | `05 · Sacola`, `05b · Sacola vazia` | MVP |
-| [US-07](US-07-aplicar-cupom.md) | Aplicar cupom | `05 · Sacola`, `01 · Home` | **Opcional no MVP** |
+| [US-07](US-07-aplicar-cupom.md) | Aplicar cupom | `05 · Sacola`, `01 · Home` | MVP — confirmado em [DP-14](../decisoes-produto.md#dp-14--cupom-entra-no-mvp) |
 | [US-08](US-08-finalizar-e-receber-codigo.md) | Finalizar e receber código | `06 · Pedido confirmado` | MVP |
 | [US-09](US-09-lidar-com-estados-de-erro.md) | Lidar com estados de erro | `07 · Restaurante fechado`, `08 · Item esgotado`, `11b · Busca sem resultados`, `10 · Erro` | MVP |
-| [US-10](US-10-trocar-de-restaurante-com-sacola.md) | Trocar de restaurante com sacola | *(sem tela desenhada)* | **Opcional no MVP** |
+| [US-10](US-10-trocar-de-restaurante-com-sacola.md) | Trocar de restaurante com sacola | *(sem tela desenhada — copy especificada na história)* | MVP — confirmado em [DP-21](../decisoes-produto.md#dp-21--troca-de-restaurante-com-sacola-entra-no-mvp) |
 
 ### Fluxo principal
 
@@ -66,7 +68,14 @@ Por que esta história existe e o que a tela mostra.
 
 ## [DECISÃO PENDENTE]
 
-- Só quando a fonte for ambígua ou duas fontes se contradisserem.
+- Só quando a fonte for ambígua ou duas fontes se contradisserem. Uma vez
+  decidido pelo PO, o bloco vira `## Decisões`, com link para a entrada em
+  `docs/decisoes-produto.md`.
+
+## Critérios de aceite
+
+- Lista curta e verificável, do ponto de vista de quem usa. Sem estimativa,
+  sem ponto de história.
 ```
 
 Convenções:
@@ -97,51 +106,31 @@ Confirmado pelo `ARQUITETURA.md` §11 e pelo próprio handoff:
 Coisas que apareceram nas fontes e não estão cobertas pelas dez histórias
 acima. Nenhuma virou US numerada — ficam aqui como pauta de mentoria.
 
-1. **Troca de bairro/endereço de retirada.** O *pickup pill* do header é
-   clicável em todas as telas e deveria abrir um modal de troca — o handoff
-   admite que essa tela não foi desenhada ("implementar simples"). Hoje o
-   bairro está fixo em "Vila Madalena" no navegador, e ele é o recorte de toda
-   a descoberta (US-01, US-02, US-03). É a lacuna mais visível do pacote.
+> Seis itens que estavam nesta lista já foram decididos pelo PO e saíram
+> daqui: bairro de retirada fixo, coleta de contato para avisos, "Indica um
+> restaurante", acessibilidade (piso mínimo definido), paginação e o
+> identificador de restaurante. Ver `docs/decisoes-produto.md`
+> (DP-02, DP-17, DP-22, DP-26, DP-23) e `docs/qa/00-briefing-do-lead.md`
+> (seção A, para o identificador).
 
-2. **Contradição sobre a plataforma.** O overview do handoff descreve o Mandaí
+1. **Contradição sobre a plataforma.** O overview do handoff descreve o Mandaí
    como "app web **mobile-first**", mas logo abaixo o escopo da entrega diz
    "desktop apenas (1440 px)", e o `ARQUITETURA.md` §11 tira responsividade do
    plano. Para um produto de retirada — usado em pé, na rua, a caminho do
    balcão — vale decidir isso conscientemente e registrar em ADR.
 
-3. **Tela `09 · Login` (v2).** Está desenhada por inteiro, com os benefícios
+2. **Tela `09 · Login` (v2).** Está desenhada por inteiro, com os benefícios
    prometidos (reordenar em 2 cliques, favoritos, cupons exclusivos) e login
    social. Fora do MVP, mas é o candidato natural a "exercício extra" citado
    no §8 do plano — e destrava o histórico que as telas `05b` e `11b` já
-   insinuam ("Pediu na semana passada", buscas recentes).
+   insinuam ("Pediu na semana passada", buscas recentes) — hoje resolvido de
+   forma simples via localStorage (DP-07, DP-12).
 
-4. **Coleta de contato para avisos.** "Me avisa quando abrir" (tela `07`) e
-   "Me avisa quando voltar" (tela `08`) coletam e-mail ou celular, mas nenhuma
-   entidade guarda isso e não há canal de envio. Ou vira uma história própria
-   com `StockAlert`, ou os botões saem do MVP.
-
-5. **"Indica um restaurante"** (tela `11b`) é um caminho de aquisição sem
-   destino definido — não há formulário, entidade nem processo por trás.
-
-6. **Acessibilidade.** O handoff traz uma seção inteira e bem específica
-   (trap de foco no modal, Esc, `aria-label` no QR, seletor de quantidade com
-   papel correto, rótulo em todo campo), mas o `ARQUITETURA.md` §11 tira WCAG
-   do escopo. As duas fontes discordam; boa parte do que o handoff pede é
-   barata se feita desde o começo e cara se deixada para depois.
-
-7. **SEO das páginas de restaurante.** O handoff pede renderização no servidor
+3. **SEO das páginas de restaurante.** O handoff pede renderização no servidor
    explicitamente. Como cada casa tem endereço próprio, isso é canal de
    aquisição real — e o Next.js já entrega quase de graça.
 
-8. **Paginação.** "Carregar mais pizzarias" (tela `02`) está desenhado e nenhum
-   endpoint do plano prevê paginação. O §8 lista paginação como extensão
-   pós-MVP.
-
-9. **Verificação do pedido no balcão.** O QR aponta para uma URL assinada que
-   "o atendente lê no balcão", mas não há tela, rota nem produto do lado do
-   restaurante. Vale explicitar que o MVP entrega só a metade do cliente.
-
-10. **Identificador de restaurante: `slug` ou `id`.** O handoff usa `slug` na
-    URL, o `ARQUITETURA.md` §3.1 usa `id`. O `docs/erd.md` já registra isso
-    como pendência de ADR — vale ser o primeiro ADR novo, porque afeta rotas,
-    endpoints e seed.
+4. **Verificação do pedido no balcão.** O QR aponta para uma URL que "o
+   atendente lê no balcão", mas não há tela, rota nem produto do lado do
+   restaurante — e o MVP nem assina essa URL de verdade (DP-16). Vale
+   explicitar que o MVP entrega só a metade do cliente.

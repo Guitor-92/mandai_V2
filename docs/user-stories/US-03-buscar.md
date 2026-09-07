@@ -9,7 +9,7 @@
 ## Contexto
 
 A busca vive no header e acompanha o cliente por todas as telas. Enter leva
-para `/buscar?q=<termo>`. O resultado é **misto**: uma coluna de restaurantes e
+para `/busca?q=<termo>`. O resultado é **misto**: uma coluna de restaurantes e
 uma de pratos, cada prato mostrando a que restaurante pertence e o preço. O
 trecho digitado aparece destacado em amarelo dentro do nome encontrado.
 
@@ -30,16 +30,39 @@ buscado, oferece sugestões próximas, buscas recentes, categorias e o convite
 
 - Autocomplete/sugestão enquanto digita — não está desenhado.
 - Correção ortográfica ou busca semântica.
-- "Indica um restaurante" como fluxo funcional (o botão existe, o destino não).
-- Histórico persistido de buscas por pessoa — não há cadastro no MVP.
+- "Indica um restaurante" como fluxo funcional — o link fica na tela, mas só
+  mostra um toast ao clicar,
+  [DP-22](../decisoes-produto.md#dp-22--indica-um-restaurante-sai-do-mvp-funcional).
+- Histórico persistido de buscas por pessoa no servidor — não há cadastro no
+  MVP; buscas recentes ficam só no navegador (DP-07 abaixo).
+- Filtro por faixa de preço ou distância em km — sem campo no modelo.
 
-## [DECISÃO PENDENTE]
+## Decisões
 
-- **Contrato do endpoint.** O handoff propõe
-  `POST /api/search { q, lat, lng }` devolvendo `{ restaurants, dishes }`; o
-  `ARQUITETURA.md` §2.4 define `GET /api/search?q=`. Escolher um.
-- **Filtros laterais.** Faixa de preço (`R$` / `R$R$` / `R$R$R$`) e o slider de
-  distância em km não têm campo correspondente no ERD. O handoff também diz que
-  os filtros podem ser client-side ou refetch — definir qual no MVP.
-- **Buscas recentes.** A tela `11b` mostra chips de "recentes"; sem cadastro,
-  isso teria que morar no navegador. Confirmar se entra.
+- **Contrato do endpoint:** `GET /api/search?q=` devolvendo
+  `{ restaurants, items }` — resolvido no briefing do lead
+  (`docs/qa/00-briefing-do-lead.md`, seção C).
+- **Filtros laterais:** client-side, só com "Aberto agora" e "Pronto em X
+  min" —
+  [DP-06](../decisoes-produto.md#dp-06--filtros-da-busca-ficam-client-side).
+- **Buscas recentes:** entram, guardadas em localStorage —
+  [DP-07](../decisoes-produto.md#dp-07--buscas-recentes-no-navegador).
+- **"Indica um restaurante":** sai do MVP funcional, vira toast —
+  [DP-22](../decisoes-produto.md#dp-22--indica-um-restaurante-sai-do-mvp-funcional).
+
+## Critérios de aceite
+
+- Digitar um termo no campo de busca do header e apertar Enter navega para
+  `/busca?q=<termo>`.
+- A página de resultados mostra a contagem, a coluna de restaurantes e a
+  coluna de pratos (cada prato com o nome do restaurante e o preço), com o
+  termo buscado destacado em amarelo dentro dos nomes encontrados.
+- Os filtros "Aberto agora" e "Pronto em X min" refinam a lista já carregada,
+  sem gerar uma nova chamada à API.
+- Buscar sem nenhum resultado leva à tela `11b`, com o termo repetido,
+  sugestões, categorias e os chips de busca recente (se houver alguma
+  guardada neste navegador).
+- Clicar em "Indica um restaurante" mostra o toast de DP-22 e não navega nem
+  abre formulário nenhum.
+- Clicar em qualquer resultado (restaurante ou prato) leva ao cardápio do
+  restaurante correspondente.

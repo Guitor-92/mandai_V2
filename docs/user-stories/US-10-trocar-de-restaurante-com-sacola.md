@@ -1,7 +1,9 @@
 # US-10: Trocar de restaurante com sacola
 
-> **Opcional no MVP.** Sem ela nada quebra tecnicamente — mas a sacola pode ser
-> substituída sem aviso, o que é a pior perda silenciosa possível no fluxo.
+> **Confirmada no MVP.** Estava marcada como opcional; o PO decidiu que
+> **entra** — sem ela a sacola pode ser substituída sem aviso, a pior perda
+> silenciosa possível no fluxo. Ver
+> [DP-21](../decisoes-produto.md#dp-21--troca-de-restaurante-com-sacola-entra-no-mvp).
 
 **Como** cliente, **quero** ser avisado ao mudar de restaurante com itens na sacola, **para** não perder a seleção.
 
@@ -38,13 +40,35 @@ com o item novo, já do restaurante novo.
 - Desfazer a limpeza depois de confirmada.
 - Guardar a sacola descartada para depois.
 
-## [DECISÃO PENDENTE]
+## Decisão e especificação do diálogo
 
-- **Não há tela.** O aviso não foi desenhado — nem layout, nem copy, nem os
-  rótulos dos botões. É preciso escrever tudo isso seguindo o tom do resto do
-  produto ("coloquial paulistano, sem gírias forçadas") antes de implementar.
-- **Onde o aviso aparece.** No clique do `+` no cardápio, ou só ao confirmar
-  dentro do modal de customização (depois de a pessoa já ter escolhido tudo)?
-  A segunda opção desperdiça o esforço da escolha.
-- **A pessoa pode voltar atrás?** Guardar a sacola anterior por alguns minutos
-  para permitir desfazer é possível, mas não está previsto em lugar nenhum.
+Tudo isso está fechado em
+[DP-21](../decisoes-produto.md#dp-21--troca-de-restaurante-com-sacola-entra-no-mvp):
+
+- **Onde o aviso aparece:** no clique do `+` no cardápio (que abriria o modal
+  de customização), não depois de a pessoa já ter escolhido tudo no modal —
+  evita desperdiçar o esforço da escolha se a resposta for cancelar.
+- **Título:** "Trocar de restaurante?"
+- **Corpo:** "Sua sacola tem itens de {restaurante atual}. Pra pedir de
+  {restaurante novo}, a gente esvazia a sacola e começa do zero."
+- **Botão de cancelar:** "Continuar em {restaurante atual}" — não mexe em
+  nada, o item novo não entra.
+- **Botão de confirmar:** "Esvaziar e trocar" — esvazia a sacola e adiciona o
+  item novo.
+- **Sem desfazer:** confirmar a troca é definitivo; a sacola anterior não é
+  guardada para recuperação.
+
+## Critérios de aceite
+
+- Com a sacola vazia, clicar em `+` em qualquer restaurante abre o modal de
+  customização direto, sem diálogo nenhum.
+- Com a sacola cheia de itens do mesmo restaurante, clicar em `+` também abre
+  o modal direto.
+- Com a sacola cheia de itens de **outro** restaurante, clicar em `+` mostra o
+  diálogo especificado acima antes de qualquer modal de customização.
+- Clicar em "Continuar em {restaurante atual}" fecha o diálogo, mantém a
+  sacola intacta e não abre o modal de customização do item novo.
+- Clicar em "Esvaziar e trocar" esvazia a sacola, fecha o diálogo e abre o
+  modal de customização do item do restaurante novo.
+- Navegar entre páginas de restaurantes diferentes, sem tentar adicionar
+  item, nunca dispara o diálogo.

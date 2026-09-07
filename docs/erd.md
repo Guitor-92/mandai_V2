@@ -104,7 +104,7 @@ erDiagram
     int      subtotalCents    "soma das linhas"
     int      discountCents    "desconto congelado no momento do pedido"
     int      totalCents       "subtotal menos desconto; retirada é sempre grátis"
-    string   qrPayload        "URL assinada lida no balcão"
+    string   qrPayload        "URL determinística lida no balcão — sem assinatura real no MVP (DP-16)"
     datetime estimatedReadyAt "createdAt + prepTimeMinutes"
     datetime createdAt
   }

@@ -38,16 +38,32 @@ guardado no navegador, com padrão "Vila Madalena".
 - Recomendação personalizada, histórico ou favoritos (dependem de cadastro,
   que está fora do MVP).
 
-## [DECISÃO PENDENTE]
+## Decisões
 
-- **De onde vem "próximo".** O handoff propõe
-  `GET /api/restaurants?lat&lng&radius` (geolocalização real), mas o
-  `ARQUITETURA.md` §2.4 define `GET /api/restaurants` com filtro `?category=`,
-  e o ERD guarda `Restaurant.distanceMeters` como um número fixo por
-  restaurante. Para o MVP didático, decidir se distância é dado de seed
-  (mais simples) ou cálculo por coordenadas.
-- **Bairro de retirada.** Está fixo em "Vila Madalena" no armazenamento local
-  e não há tela para trocá-lo. Definir se o MVP mantém o valor fixo ou se o
-  modal simples de troca entra no escopo.
-- **"Mais pedidos no bairro".** O título fala de pratos, mas o design renderiza
-  cards de restaurante. Confirmar qual das duas leituras vale.
+- **De onde vem "próximo":** distância é dado de seed, não geolocalização real
+  — [DP-01](../decisoes-produto.md#dp-01--distância-vem-do-seed-não-de-geolocalização).
+- **Bairro de retirada:** fixo em "Vila Madalena"; o *pickup pill* abre um
+  popover informativo, não um modal de troca —
+  [DP-02](../decisoes-produto.md#dp-02--bairro-de-retirada-fixo-em-vila-madalena).
+- **"Mais pedidos no bairro":** mostra restaurantes (ordenados por
+  `reviewCount`), não pratos —
+  [DP-03](../decisoes-produto.md#dp-03--mais-pedidos-no-bairro-mostra-restaurantes).
+
+## Critérios de aceite
+
+- Ao abrir a Home, vejo o hero, os dois CTAs, os 8 tiles de categoria, o
+  banner do cupom e as duas seções de restaurante ("Pertinho de você" e "Mais
+  pedidos no bairro"), todas com dado de verdade vindo da API.
+- Os restaurantes de "Pertinho de você" aparecem ordenados do mais perto pro
+  mais longe.
+- Os restaurantes de "Mais pedidos no bairro" aparecem ordenados do mais
+  avaliado pro menos avaliado, e não se repetem com a seção acima só por
+  coincidência de dado — cada seção tem seu próprio critério.
+- O *pickup pill* sempre mostra "Vila Madalena"; clicar nele abre o popover
+  com a copy de DP-02 e o botão "Entendi" fecha sem navegar pra lugar nenhum.
+- Clicar num card de restaurante leva ao cardápio dele (US-04).
+- Se a lista de restaurantes vier vazia da API, a seção mostra o estado vazio
+  em vez de sumir ou quebrar a página.
+- Se a API falhar ao carregar, a Home mostra o tratamento inline de
+  [DP-19](../decisoes-produto.md#dp-19--alcance-da-tela-de-erro-10) em vez da
+  tela cheia de erro.
