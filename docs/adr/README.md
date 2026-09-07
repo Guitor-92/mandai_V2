@@ -20,6 +20,15 @@ quatro seções — Contexto, Decisão, Consequências, Alternativas considerada
 | [0005](0005-ddd-clean-enxuto-um-bounded-context.md) | DDD/Clean enxuto com 1 bounded context | Accepted | 2026-09-06 |
 | [0006](0006-sem-autenticacao-no-mvp.md) | Sem autenticação no MVP | Accepted | 2026-09-06 |
 | [0007](0007-documentacao-em-docs.md) | Documentação em `docs/` (ERD, ADR, User Stories) | Accepted | 2026-09-06 |
+| [0008](0008-slug-como-identificador-publico-do-restaurante.md) | `slug` como identificador público do restaurante | Accepted | 2026-09-06 |
+| [0009](0009-rotas-do-frontend-em-pt-br.md) | Rotas do frontend em pt-BR | Accepted | 2026-09-06 |
+| [0010](0010-superficie-da-api-v0-1-0.md) | Superfície da API v0.1.0 | Accepted | 2026-09-06 |
+| [0011](0011-repositorio-em-memoria-como-segunda-implementacao-de-infra.md) | Repositório em memória como segunda implementação de infra | Accepted | 2026-09-06 |
+| [0012](0012-piso-de-acessibilidade.md) | Piso de acessibilidade | Accepted | 2026-09-06 |
+| [0013](0013-qr-sem-assinatura-criptografica-real.md) | QR sem assinatura criptográfica real | Accepted | 2026-09-06 |
+| [0014](0014-order-status-enum-de-quatro-valores-so-placed-no-mvp.md) | `Order.status` — enum de quatro valores, só `PLACED` no MVP | Accepted | 2026-09-06 |
+| [0015](0015-cupom-e-troca-de-restaurante-confirmados-no-mvp.md) | Cupom (US-07) e troca de restaurante (US-10) confirmados no MVP | Accepted | 2026-09-06 |
+| [0016](0016-bug-conhecido-nextjs-notfound-devolve-200.md) | Bug conhecido do Next.js 15.5.25 — `notFound()` devolve HTTP 200 | Accepted | 2026-09-06 |
 
 ---
 
