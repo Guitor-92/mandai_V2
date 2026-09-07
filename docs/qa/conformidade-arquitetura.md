@@ -1,11 +1,15 @@
 # Conformidade com a arquitetura — auditoria do `architect-agent`
 
-Data: 2026-09-06 · **Reauditoria completa** — `apps/api` estruturalmente completo e
-`apps/web` com as seis rotas do ADR-0009 no disco (`/`, `/categoria/[slug]`, `/busca`,
-`/restaurante/[slug]`, `/sacola`, `/pedido/[codigo]`) mais `error.tsx`/`loading.tsx`/
-`not-found.tsx` e ~20 componentes em `modules/`. `tsc`, `build` e `lint` limpos
-segundo o frontend-agent; fluxo ponta a ponta verificado com pedido real (`MA-YPJ8`).
-Os itens antes marcados N/A (por falta de UI) foram reconferidos nesta rodada.
+Data: 2026-09-06 · **Auditoria final, pré-`main`.** `apps/api` estruturalmente
+completo; `apps/web` com as seis rotas do ADR-0009 no disco (`/`, `/categoria/[slug]`,
+`/busca`, `/restaurante/[slug]`, `/sacola`, `/pedido/[codigo]`) mais `error.tsx`/
+`loading.tsx`/`not-found.tsx` e ~20 componentes em `modules/`. `tsc`, `build` e `lint`
+limpos segundo o frontend-agent; fluxo ponta a ponta verificado com pedido real
+(`MA-YPJ8`). Este documento passou por três rodadas de auditoria — a prosa de cada
+correção foi mantida de propósito (ver seções abaixo) em vez de substituída pelo
+estado final, porque o raciocínio de cada ida e volta é o que faz o registro valer
+como material de mentoria, não só como checklist. **Estado atual: zero desvios
+abertos**, todos reconferidos por mim no disco.
 
 ---
 
@@ -66,39 +70,28 @@ Fechado nos dois pontos.
 | Item verificado | Esperado | Encontrado | Veredito |
 |---|---|---|---|
 | `app.css`/`tokens.css` são cópia do handoff | Byte-idênticos, hex ali é a fonte, não invenção | `diff design_handoff_mandai_web/styles/{app,tokens}.css apps/web/src/styles/{app,tokens}.css` → sem diferença | **OK** |
-| Cor hardcoded fora de `tokens.css`/cópia do handoff | Sempre `var(--*)`, nunca hex inventado | Ver os dois itens abaixo (`constants.ts` e hex inline em `.tsx`) | **Desvio — precisa correção** |
+| Cor hardcoded fora de `tokens.css`/cópia do handoff | Sempre `var(--*)`, nunca hex inventado | **Corrigido, reconferido no disco.** Ver os dois pontos abaixo (`constants.ts` e hex inline em `.tsx`) — ambos fechados | **OK** |
 | `--tomate-*` em heading | Nunca | 30 headings (`h1`/`h2`/`h3`) revisados em todo `apps/web/src` — todos usam `var(--ink-800)` (texto sobre fundo claro) ou `var(--white)` (`ClosedRestaurantView.tsx:53`, título sobre o hero escuro). Nenhum usa `--tomate-*` | **OK** |
-| Sombra azulada vs. warm | Sombra sempre a partir de `rgba(46,28,10,…)` (tokens `--shadow-1..3`/`--shadow-pop`) ou overlay warm (`rgba(20-28,16-24,10-18,…)`) | A maioria dos overlays já é warm (`AddItemModal.tsx:98`, `ChangeRestaurantDialog.tsx:21`, `OutOfStockModal.tsx:24`, `ClosedRestaurantView.tsx:46/49` — todos `rgba(20-28,…)`). Duas exceções neutras (não azuis, mas também não warm): `OrderConfirmationView.tsx:71` (`boxShadow: "0 8px 24px rgba(0,0,0,0.25)"`) e `app/page.tsx:192` (`background: "rgba(0,0,0,0.18)"`) | **Desvio — precisa correção** (menor: não é azulada, mas quebra a convenção warm do design system) |
+| Sombra azulada vs. warm | Sombra sempre a partir de `rgba(46,28,10,…)` (tokens `--shadow-1..3`/`--shadow-pop`) ou overlay warm (`rgba(20-28,16-24,10-18,…)`) | **Corrigido, reconferido no disco.** `app/page.tsx:192` — `background: "rgba(46, 28, 10, 0.18)"`; `OrderConfirmationView.tsx:71` — `boxShadow: "0 8px 24px rgba(46, 28, 10, 0.25)"` (e o `background` do mesmo bloco, que era `"#fff"`, agora é `"var(--white)"` — ver item 2 do hex, também fechado ali) | **OK** |
 | Server Components por padrão, `'use client'` só no interativo | Listagens (`/`, `/categoria/[slug]`, `/busca`, `/restaurante/[slug]`, `/pedido/[codigo]`) sem `'use client'`; `/sacola` e componentes interativos com | Confirmado: as 5 páginas de listagem/leitura fazem `fetch` direto no Server Component, sem `'use client'`; `apps/web/src/app/sacola/page.tsx:1` tem `"use client"` (único `page.tsx` que precisa, por depender de `CartContext`/`localStorage` — conforme ADR-0009); os ~20 componentes client (`AddItemModal`, `CartView`, `MenuNav`, `SearchResultsView` etc.) são todos peças interativas (modal, sacola, scrollspy, filtros client-side de DP-06/DP-07), não páginas inteiras | **OK** |
 | Sacola = Context + `useReducer` + sync `localStorage`, sem Zustand | Conforme ADR-0003 | `apps/web/src/modules/cart/context.tsx` — `CartProvider` com `useReducer`, `useEffect` de hidratação/persistência em `localStorage`, guarda contra `localStorage` indisponível; nenhuma dependência de Zustand no `package.json` | **OK** |
 | Dinheiro em centavos inteiros no frontend | `unitPriceCents`, `lineTotalCents`, etc. como `number` inteiro | `apps/web/src/modules/cart/types.ts` — `unitPriceCents`, `priceDelta`, `lineTotalCents` todos `number`; formatação isolada em `apps/web/src/shared/lib/money.ts` | **OK** |
 | Rotas pt-BR (ADR-0009) | `/`, `/categoria/[slug]`, `/busca`, `/restaurante/[slug]`, `/sacola`, `/pedido/[codigo]` | As seis existem em `apps/web/src/app/`, cada uma com o segmento dinâmico certo (`[slug]`, `[codigo]`) | **OK** |
-| Sacola: cada adição cria linha nova (DP-11) | Nunca funde com linha existente | `context.tsx` — função `addItemToCart` não tem mais `sameLine`/merge; todo `ADD_ITEM` gera `lineId: crypto.randomUUID()` novo | **OK — corrigido** (era o achado fora do checklist da rodada anterior) |
-| `page.module.css` órfão com `prefers-color-scheme: dark` (§11) | Removido — dark mode fora de escopo, arquivo não é importado | `apps/web/src/app/page.module.css` ainda existe no disco, ninguém o importa (`grep -rn "page.module.css" apps/web/src` → vazio), contém bloco `@media (prefers-color-scheme: dark)` (linhas ~130-140) | **Desvio — correção em andamento** (lead já pediu remoção) |
+| Sacola: cada adição cria linha nova (DP-11) | Nunca funde com linha existente | `context.tsx` — função `addItemToCart` não tem `sameLine`/merge; todo `ADD_ITEM` gera `lineId: crypto.randomUUID()` novo | **OK** |
+| `page.module.css` órfão com `prefers-color-scheme: dark` (§11) | Removido — dark mode fora de escopo, arquivo não é importado | **Corrigido, reconferido no disco.** `apps/web/src/app/page.module.css` não existe mais; os cinco SVGs de scaffold do `create-next-app` (`next.svg`, `vercel.svg` etc.) também sumiram — `find apps/web/public apps/web/src -iname "*.svg"` só lista os assets reais do projeto (`assets/glyphs/*`, `assets/logo-*`, `assets/illustrations/*`) | **OK** |
 
-### Desvio a corrigir: hex fora de `tokens.css` — dois pontos distintos
+### Fechado: hex fora de `tokens.css` — os dois pontos da rodada anterior
 
-**1. `constants.ts:15,18` — ainda aberto**, mesmo depois de uma rodada de correção
-pedida pelo lead: `CATEGORIES` (8 categorias, `docs/erd.md`/ADR-0010) usa
-`var(--tomate-50)`/`var(--folha-50)`/`var(--manga-50)` em seis linhas, mas `acai`
-(`bg: "#F6E9F2"`) e `bebidas` (`bg: "#E0EEF0"`) continuam hex literal. Como já registrado
-na rodada anterior, isto reflete um limite real de `tokens.css` (só 3 famílias de tom
-claro pra 8 categorias, `--coco-*` não tem um tom claro) — a correção sugerida continua
-de pé: ciclar os 3 tons existentes ou derivar um 4º com `color-mix(in srgb,
-var(--coco-500) 12%, var(--white))` em vez de hex novo.
+**1. `constants.ts:15,18`.** Reconferido no disco: `acai` agora é `bg: "var(--folha-50)"`
+e `bebidas` é `bg: "var(--manga-50)"` — a correção escolheu ciclar os 3 tons claros já
+existentes (`tomate-50`/`folha-50`/`manga-50`) entre as 8 categorias, aceitando
+repetição, em vez de derivar um 4º tom via `color-mix()` como eu tinha sugerido como
+alternativa. As duas resolviam o problema; ciclar é mais simples, e simples é a moeda
+deste projeto (`ARQUITETURA.md` §8). Sem hex novo. Fechado.
 
-**2. ~27 ocorrências de `#fff` inline em `style={{}}`, espalhadas por 8 componentes** —
-achado novo desta rodada, meu grep anterior (`#[0-9a-fA-F]{6}`) não pegava hex de 3
-dígitos. Concentração: `OrderConfirmationView.tsx` (6, linhas 46/58/71/108/124/129),
-`app/page.tsx` (7, linhas 25/49/65/112/147/182/231), `ClosedRestaurantView.tsx` (4,
-linhas 20/36/51/53), `AddItemModal.tsx` (3, linhas 110/133/332), `MenuSectionBlock.tsx`
-(3, linhas 103/104/111), `RestaurantHero.tsx` (2, linhas 22/34), `CartView.tsx:113`,
-`Toast.tsx:34`.
-
-Diferente do caso de `constants.ts`, aqui **não há limite de design system** — `white`
-já é um token (`--white: #FFFFFF`, `tokens.css:64`). `color: "#fff"` deveria ser
-`color: "var(--white)"` em todos os casos; é substituição direta, sem decisão de design
-nenhuma envolvida, só o token que já existe não foi usado.
+**2. ~27 ocorrências de `#fff` inline.** Reconferido no disco:
+`grep -rniE '#[0-9a-f]{3}\b|#[0-9a-f]{6}\b' apps/web/src --include=*.tsx --include=*.ts`
+fora de `styles/` → vazio. Todas viraram `var(--white)`. Fechado.
 
 ---
 
@@ -116,33 +109,53 @@ testar patch do Next isolado, fora da janela desta release — fica anotada lá)
 
 ## Resumo para o lead
 
-- **Backend: todos os itens auditados fechados** (9 no total, contando as 3 rodadas de
-  correção do `qrPayload`/ficha do restaurante, todas reconfirmadas por mim no disco).
-- **Frontend: reauditoria completa concluída.** OK confirmado em: cópia fiel de
-  `tokens.css`/`app.css`, ausência de `--tomate-*` em heading (30 headings revisados),
-  Server Components por padrão com `'use client'` só onde precisa (`/sacola` e ~20
-  componentes interativos), sacola via Context+`useReducer` sem Zustand, centavos
-  inteiros, as 6 rotas do ADR-0009, e a correção do DP-11 (sacola não funde mais
-  linhas).
-- **3 desvios abertos no frontend**, nenhum bloqueante para a demonstração, todos
-  citados com `arquivo:linha` acima:
-  1. `constants.ts:15,18` — hex ainda não corrigido de uma rodada anterior.
-  2. ~27 ocorrências de `#fff` inline deveriam ser `var(--white)` (token já existe,
-     não é limite de design system como o item 1 — é só reuso que não aconteceu).
-  3. Duas sombras/overlays neutros (`rgba(0,0,0,…)`) em vez de warm —
-     `OrderConfirmationView.tsx:71` e `app/page.tsx:192`.
-  4. `page.module.css` órfão com bloco de dark mode, ainda no disco.
-- **1 bug de dependência (Next.js) aceito como risco conhecido**, ADR-0016 — não
-  bloqueante, não é desvio do time.
-- Nenhuma proibição do `ARQUITETURA.md` §8 apareceu em `apps/api` ou `apps/web`.
+- **Zero desvios abertos.** Backend e frontend, todos os itens auditados neste
+  documento estão **OK**, cada um reconferido por mim diretamente no disco (não só a
+  partir do relato de quem corrigiu).
+- Backend: 9 itens de contrato/arquitetura fechados, incluindo as 3 rodadas de correção
+  do `qrPayload`/ficha do restaurante.
+- Frontend: 9 itens fechados, incluindo os 4 que ainda estavam abertos na rodada
+  anterior (hex em `constants.ts`, ~27 `#fff` inline, 2 sombras neutras,
+  `page.module.css` órfão).
+- **1 bug de dependência (Next.js) aceito como risco conhecido**, ADR-0016 — não é
+  desvio do time, não bloqueia a release.
+- Nenhuma proibição do `ARQUITETURA.md` §8 apareceu em `apps/api` ou `apps/web`, em
+  nenhuma das rodadas.
 
-### Nota de correção deste relatório
+## Limites desta auditoria (dois erros do próprio processo, documentados de propósito)
 
-Minha primeira versão deste arquivo (e a leitura que embasou o ADR-0013) tratou a
-ausência de assinatura no `qrPayload` como puramente documental — não percebi, ao ler
-`create-order.ts` pela primeira vez, que o código já emitia um `?sig=` com hash real. O
-lead pegou isso relendo o arquivo. O ADR-0013 em si continua correto como registro da
-*decisão* (não deveria haver `sig=`); o que faltou foi eu marcar o código então
-existente como desviante dela. Os itens de `qrPayload` acima já refletem a correção
-subsequente, reconferida por mim de forma independente no disco (não só no relato do
-lead) antes de marcar como OK.
+Uma auditoria que se apresenta como infalível vale menos do que uma que registra onde
+errou. Dois erros do processo de auditoria em si, não do código auditado:
+
+**1. Falso positivo do `sameLine`/DP-11, por leitura contra um instante que já tinha
+mudado.** No primeiro passe, li `context.tsx`/`types.ts` e reportei a função `sameLine`
+fundindo linhas idênticas na sacola como contradizendo DP-11. Isso era verdade no
+código no exato momento em que li — mas o `frontend-agent` já estava corrigindo isso a
+partir da leitura de DP-11 em paralelo, e por acaso de tempo o achado chegou ao lead
+descrevendo um estado que já estava saindo de cena. A lição não é "não confiar no
+`frontend-agent`" nem "esperar mais antes de reportar" — os dois lados estavam
+trabalhando ao mesmo tempo, e um relatório de auditoria sobre código em movimento é
+sempre uma fotografia de um instante. A mitigação real, que apliquei nas rodadas
+seguintes, é **reconferir no disco antes de marcar qualquer item como fechado ou
+como aberto**, nunca confiar num achado antigo nem num aviso de correção sem checar.
+
+**2. Falso negativo do grep de hex, por um padrão incompleto.** O grep original desta
+auditoria usava `#[0-9a-fA-F]{6}` — hex de 6 dígitos. Isso deixou passar `#fff`, `#000`
+e outras formas abreviadas de 3 dígitos, que é como a maioria das ocorrências
+apareceu no código (`"#fff"` em `style={{ color: "#fff" }}`). Resultado: ~27 ocorrências
+reais ficaram invisíveis numa rodada inteira, e só apareceram quando o lead rodou
+`grep -rniE '#[0-9a-f]{3}\b|#[0-9a-f]{6}\b'` e me passou o padrão certo. Corrigi o grep
+usado nesta reauditoria (linha do item "Cor hardcoded..." acima já usa o padrão
+completo) — mas registro aqui porque é o tipo de lacuna de ferramenta que se repete se
+não virar hábito: **daqui pra frente, todo grep de hex neste projeto verifica os dois
+formatos (3 e 6 dígitos), nunca só um.**
+
+## Nota de correção anterior (mantida por registro)
+
+Numa rodada anterior desta mesma auditoria, tratei a ausência de assinatura no
+`qrPayload` como puramente documental — não percebi, ao ler `create-order.ts` pela
+primeira vez, que o código já emitia um `?sig=` com hash real. O lead pegou isso
+relendo o arquivo. O ADR-0013 em si continuou correto como registro da *decisão* (não
+deveria haver `sig=`); o que faltou foi eu marcar o código então existente como
+desviante dela. Essa correção, e a seguinte (`/r/` → `/pedido/`), estão narradas acima
+na seção do backend.
