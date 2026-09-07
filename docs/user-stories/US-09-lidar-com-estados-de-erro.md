@@ -66,16 +66,36 @@ pedido salvo) e três ações: "Tentar de novo", "Voltar pra sacola" e
 - Tela `09 · Login` — é v2, fora do MVP por decisão explícita.
 - "Falar com a gente" como canal funcional.
 
-## [DECISÃO PENDENTE]
+## Decisões
 
-- **"Me avisa quando abrir" e "Me avisa quando voltar".** Os dois botões
-  coletam contato, mas nenhuma entidade guarda isso. O ERD registra que, se
-  entrar, vira algo como `StockAlert`; por ora está fora do MVP. Decidir se os
-  botões ficam desabilitados, escondidos, ou se a entidade entra.
-- **`OpeningHour` como tabela.** A alternativa enxuta é manter só `isOpen` mais
-  um texto pronto de horário — mas aí a tela `07` perde a grade semanal.
-- **Alcance da tela `10`.** Ela está escrita para a falha do envio do pedido.
-  Falta definir se as demais falhas (lista não carrega, cardápio não carrega)
-  reaproveitam a mesma tela ou ganham tratamento inline.
-- **Quem decide "Últimas unidades".** Não há regra de negócio dizendo quando um
-  prato entra nesse estado — hoje é um valor digitado à mão no cadastro.
+- **"Me avisa quando abrir/voltar":** os botões ficam, mas viram um toast sem
+  coletar contato nenhum —
+  [DP-17](../decisoes-produto.md#dp-17--me-avisa-quando-abrirvoltar).
+- **`OpeningHour` como tabela:** mantida — a grade semanal da tela `07`
+  precisa dela —
+  [DP-18](../decisoes-produto.md#dp-18--openinghour-continua-como-tabela).
+- **Alcance da tela `10`:** exclusiva da falha em `POST /api/orders`; as
+  demais falhas de carregamento usam tratamento inline —
+  [DP-19](../decisoes-produto.md#dp-19--alcance-da-tela-de-erro-10).
+- **"Últimas unidades":** rótulo manual do cadastro, sem regra automática —
+  [DP-20](../decisoes-produto.md#dp-20--últimas-unidades-é-rótulo-manual).
+
+## Critérios de aceite
+
+- Restaurante com `isOpen: false`: cardápio abre normalmente, mas nenhum item
+  tem `+` clicável nem abre modal de customização — o cardápio é só leitura.
+- A tela mostra o banner "Fechado agora", a próxima abertura, a grade semanal
+  completa e uma lista de restaurantes abertos por perto.
+- Clicar em "Me avisa quando abrir" mostra o toast de DP-17 e não abre
+  nenhum campo de contato.
+- Prato `LOW_STOCK` mostra o selo "Últimas unidades" e continua pedível
+  normalmente pelo `+`.
+- Prato `OUT_OF_STOCK` aparece em cinza, sem `+` funcional; clicar nele abre o
+  modal explicativo (não o modal de customização), com o botão "Me avisa
+  quando voltar" mostrando o toast de DP-17.
+- Buscar sem resultado leva à tela `11b` (ver critérios de aceite de US-03).
+- `POST /api/orders` falhando mostra a tela `10` completa (código copiável,
+  três diagnósticos, três ações) sem esvaziar a sacola.
+- Qualquer outro `GET` falhando (lista, cardápio, busca) mostra o bloco
+  inline "Não rolou carregar agora." com o botão "Tentar de novo", sem levar
+  à tela `10`.

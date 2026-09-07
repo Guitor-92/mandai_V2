@@ -1,8 +1,8 @@
 # US-07: Aplicar cupom
 
-> **Opcional no MVP.** Se o escopo apertar, esta é a primeira a sair — e junto
-> com ela a entidade `Coupon`, mantendo apenas `couponCode` e `discountCents`
-> congelados no pedido.
+> **Confirmada no MVP.** Estava marcada como opcional; o PO decidiu que
+> **entra**, com a entidade `Coupon` mantida como está no ERD — ver
+> [DP-14](../decisoes-produto.md#dp-14--cupom-entra-no-mvp).
 
 **Como** cliente, **quero** usar um código de cupom, **para** receber desconto.
 
@@ -41,12 +41,31 @@ pedido já feito.
 - Tela de administração de cupons.
 - Aplicar cupom automaticamente a partir do banner da Home.
 
-## [DECISÃO PENDENTE]
+## Decisões
 
-- **Endpoint de validação.** O handoff prevê
-  `POST /api/coupons/validate { code, cart }`, mas ele não aparece na lista de
-  endpoints do `ARQUITETURA.md` §2.4. Se a US entrar, o endpoint entra junto.
-- **Onde o desconto é calculado.** Validar no campo e recalcular de novo ao
-  confirmar o pedido, ou só no fechamento? O valor mostrado na sacola precisa
-  bater com o que sai no `Order`.
-- **Estado de erro do cupom** não está desenhado em nenhuma tela.
+Todas as pendências desta história foram fechadas em
+[DP-14](../decisoes-produto.md#dp-14--cupom-entra-no-mvp):
+
+- **Endpoint de validação:** `POST /api/coupons/validate { code, subtotalCents }`.
+- **Onde o desconto é calculado:** preview no `validate`, recálculo autoritativo
+  em `POST /api/orders` a partir dos itens revalidados no banco.
+- **Estado de erro do cupom:** copy definida para inválido, expirado e abaixo
+  do pedido mínimo — ver DP-14.
+- **Seed:** cupom único `MANDA20`, 20% off, pedido mínimo R$ 30,00, válido até
+  domingo da semana de lançamento.
+
+## Critérios de aceite
+
+- O campo de cupom na sacola aceita um código e, ao clicar "Aplicar", chama
+  `POST /api/coupons/validate`.
+- Cupom válido mostra a linha "Cupom MANDA20 · −R$ X,XX" no resumo e recalcula
+  o total exibido.
+- Cupom inexistente, expirado ou abaixo do pedido mínimo mostra a mensagem
+  correspondente de DP-14, sem aplicar desconto nenhum.
+- É possível remover um cupom já aplicado, voltando o resumo ao subtotal sem
+  desconto.
+- Ao confirmar o pedido (US-08), o desconto gravado no `Order` é recalculado
+  no servidor a partir do cupom e dos itens revalidados — nunca aceito
+  diretamente do valor que a tela mandou.
+- Tentar finalizar com o restaurante fechado e um cupom aplicado mostra a
+  mensagem padrão de restaurante fechado (US-09), não um erro de cupom.

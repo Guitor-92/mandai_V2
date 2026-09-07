@@ -54,14 +54,35 @@ terça, o pedido de segunda continua mostrando o que a pessoa pagou.
 - Leitor do QR pelo lado do atendente — é outro produto.
 - Agendar horário de retirada.
 
-## [DECISÃO PENDENTE]
+## Decisões
 
-- **Rota e chave de leitura.** O handoff usa `/pedido/:codigo` e
-  `GET /api/orders/:code`; o `ARQUITETURA.md` usa
-  `/confirmacao/[orderId]` e `GET /api/orders/:id`. Escolher um — e notar que
-  expor o código na URL é o que faz o link do QR funcionar.
-- **Estados de `Order.status`.** `PLACED | READY | PICKED_UP | CANCELED` é
-  proposta do ERD, não requisito: o design só desenha o pedido confirmado e não
-  há tela que mude status. Definir se o MVP nasce com um estado só.
-- **Assinatura do QR.** O formato `mandai.app/r/MA-7K2D?sig=…` implica uma
-  chave secreta e uma rota de verificação que ninguém especificou ainda.
+- **Rota e chave de leitura:** `/pedido/[codigo]` e `GET /api/orders/:code` —
+  resolvido no briefing do lead (`docs/qa/00-briefing-do-lead.md`, seção B).
+- **Estados de `Order.status`:** o MVP escreve e lê só `PLACED` —
+  [DP-15](../decisoes-produto.md#dp-15--orderstatus-no-mvp).
+- **Assinatura do QR:** `qrPayload` é uma URL determinística sem assinatura
+  criptográfica real —
+  [DP-16](../decisoes-produto.md#dp-16--qr-sem-assinatura-real).
+- **Nome do cliente:** obrigatório, mínimo 2 caracteres, máximo 60 —
+  [DP-24](../decisoes-produto.md#dp-24--nome-do-cliente-obrigatório-no-checkout).
+
+## Critérios de aceite
+
+- O formulário tem foco automático no campo de nome; o CTA "Confirmar
+  pedido" fica desabilitado enquanto o nome não passa na validação de DP-24.
+- Tentar confirmar com o nome inválido mostra a mensagem de erro de DP-24 sem
+  disparar a chamada à API.
+- Confirmar chama `POST /api/orders`, que revalida no servidor cada item, os
+  grupos de modificadores, o restaurante aberto, a sacola mono-restaurante e
+  recalcula subtotal/desconto/total a partir do banco.
+- Sucesso redireciona para `/pedido/[codigo]`, que mostra tudo o que está
+  listado em `docs/qa/respostas-po.md` (P-01) — QR, código copiável, tempo
+  estimado, ficha do restaurante, recibo e passo a passo da retirada.
+- O código segue o formato `MA-XXXX`, maiúsculo, sem `0/O/1/I`.
+- Depois da confirmação, a sacola esvazia — voltar para `/sacola` mostra o
+  estado vazio (`05b`).
+- Reabrir `/pedido/[codigo]` mais tarde mostra os mesmos valores travados no
+  momento da confirmação, mesmo que o cardápio tenha mudado de preço
+  depois.
+- Se `POST /api/orders` falhar, a sacola continua intacta e a tela de erro
+  (US-09, tela `10`) aparece com as três ações descritas.

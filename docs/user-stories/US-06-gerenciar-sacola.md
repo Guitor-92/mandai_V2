@@ -46,11 +46,37 @@ funciona a retirada em três passos e o convite do cupom.
   carrinho abandonado — não há cadastro no MVP.
 - Agendar horário de retirada.
 
-## [DECISÃO PENDENTE]
+## Decisões
 
-- **Identidade da linha.** O mesmo prato com modificadores diferentes deve
-  virar duas linhas ou uma? O design mostra linhas distintas, mas a regra de
-  agrupamento não está escrita.
-- **"Pedidos recentes"** na tela `05b` ("Pediu na semana passada") pressupõe
-  histórico. Sem cadastro, só sobreviveria no navegador. Confirmar se entra.
-- **"Ver mapa"** no cabeçalho da sacola não tem destino definido.
+- **Identidade da linha:** cada adição vira uma linha nova, sem merge —
+  [DP-11](../decisoes-produto.md#dp-11--identidade-da-linha-na-sacola).
+- **"Pedidos recentes":** entra, guardado em localStorage; some da tela
+  `05b` se não houver nenhum —
+  [DP-12](../decisoes-produto.md#dp-12--pedidos-recentes-na-sacola-vazia).
+- **"Ver mapa":** sai do MVP —
+  [DP-13](../decisoes-produto.md#dp-13--ver-mapa-sai-do-mvp).
+- **Cupom no resumo:** quando aplicado, mostra a linha de desconto calculada
+  pelo endpoint de validação —
+  [DP-14](../decisoes-produto.md#dp-14--cupom-entra-no-mvp) (detalhes em
+  US-07).
+- **Troca de restaurante:** ver
+  [DP-21](../decisoes-produto.md#dp-21--troca-de-restaurante-com-sacola-entra-no-mvp)
+  e US-10 — é o que acontece quando a pessoa confirma a troca.
+
+## Critérios de aceite
+
+- A sacola lista cada linha com nome do prato, modificadores escolhidos,
+  observação (se houver), quantidade e total da linha.
+- Aumentar ou diminuir a quantidade de uma linha recalcula o total daquela
+  linha e o total geral, na hora, sem recarregar a página.
+- Remover uma linha some ela da lista e recalcula o total geral.
+- "Editar item" reabre o modal da US-05 pré-preenchido com os dados daquela
+  linha específica — sem misturar com outra linha do mesmo prato.
+- O resumo mostra subtotal, "Taxa de retirada — Grátis" e total; a linha de
+  cupom só aparece quando um cupom válido está aplicado (US-07).
+- A sacola sobrevive a fechar e reabrir o navegador (persistida em
+  localStorage).
+- Com a sacola vazia, a tela `05b` mostra sugestões, o recap de como funciona
+  a retirada e, só se houver pedido recente guardado neste navegador, a seção
+  "Pedidos recentes" — sem ela, essa seção não aparece.
+- Não existe botão "Ver mapa" no cabeçalho da sacola.
